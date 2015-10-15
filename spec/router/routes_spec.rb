@@ -92,6 +92,8 @@ describe Volt::Routes do
       put '/people', controller: 'people', action: 'update'
       patch '/people/1', controller: 'people', action: 'update'
       delete '/people/2', controller: 'people', action: 'destroy'
+      options '/people', controller: 'people', action: 'options'
+      options '/articles/{{ article_id }}/comments', controller: 'comments', action: 'options'
     end
 
     params = @routes.url_to_params('/blog')
@@ -141,6 +143,12 @@ describe Volt::Routes do
 
     params = @routes.url_to_params(:put, '/articles/2/comments/9')
     expect(params).to eq(controller: 'comments', action: 'update', articles_id: '2', id: '9')
+
+    params = @routes.url_to_params(:options, '/people')
+    expect(params).to eq(controller: 'people', action: 'options')
+
+    params = @routes.url_to_params(:options, '/articles/1/comments')
+    expect(params).to eq(controller: 'comments', action: 'options', article_id: '1')
   end
 
   it 'should go from params to url' do
@@ -152,6 +160,7 @@ describe Volt::Routes do
       client '/login/{{ name }}/user/{{ id }}', view: 'login', action: 'user'
       get '/articles/{{ id }}', controller: 'articles', action: 'show'
       put '/articles/{{ id }}', controller: 'articles', action: 'update'
+      options '/articles', controller: 'articles', action: 'options'
     end
 
     url, params = @routes.params_to_url(view: 'blog/show', id: '55')
@@ -177,6 +186,10 @@ describe Volt::Routes do
     url, params = @routes.params_to_url({})
     expect(url).to eq(nil)
     expect(params).to eq(nil)
+
+    url, params = @routes.params_to_url(method: 'options', controller: 'articles', action: 'options')
+    expect(url).to eq('/articles')
+    expect(params).to eq({})
   end
 
   it 'should test that params match a param matcher' do
@@ -266,6 +279,9 @@ describe Volt::Routes do
 
     params = @routes.url_to_params(:delete, '/api/v1/articles/1')
     expect(params).to eq(controller: 'articles', action: 'destroy', id: '1')
+
+    params = @routes.url_to_params(:options, '/api/v1/articles')
+    expect(params).to eq(controller: 'articles', action: 'options')
   end
 
   it 'should only setup desired RESTful routes' do

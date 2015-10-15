@@ -49,7 +49,7 @@ module Volt
       # Matcher for going from params to url
       @param_matches   = {}
 
-      [:client, :get, :post, :put, :patch, :delete].each do |method|
+      [:client, :get, :post, :put, :patch, :delete, :options].each do |method|
         @direct_routes[method] = {}
         @indirect_routes[method] = {}
         @param_matches[method] = []
@@ -89,9 +89,13 @@ module Volt
       create_route(:delete, path, params)
     end
 
+    def options(path, params)
+      create_route(:options, path, params)
+    end
+
     #Create rest endpoints
     def rest(path, params)
-      endpoints = (params.delete(:only) || [:index, :show, :create, :update, :destroy]).to_a
+      endpoints = (params.delete(:only) || [:index, :show, :create, :update, :destroy, :options]).to_a
       endpoints = endpoints - params.delete(:except).to_a
       endpoints.each do |endpoint|
         self.send(('restful_' + endpoint.to_s).to_sym, path, params)
@@ -116,6 +120,10 @@ module Volt
 
     def restful_destroy(base_path, params)
       delete(path_with_id(base_path), params.merge(action: 'destroy'))
+    end
+
+    def restful_options(base_path, params)
+      options(base_path, params.merge(action: 'options'))
     end
 
     # Takes in params and generates a path and the remaining params
